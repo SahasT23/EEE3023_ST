@@ -8,8 +8,10 @@ Rc=K/N; %code rate
 message=zeros(1,K); %initialise k-bit message to all zeros
 codeword=zeros(1,N); %initialise n-bit codeword to all zeros
 snr=[0 1 2 3 4 5 6 7 8 9 10]; %range of signal-to-noise ratios in dB
-frames=[1000 1000 10000 100000 1000000 1000000 1000000 1000000 1000000 1000000 1000000]; %number of codewords generated for each SNR
-snr_uncoded=linspace(0,max(snr),length(snr)); %range of signal-to-noise ratios for BER of uncoded BPSK which we will compare our results with
+frames=[1000 1000 10000 100000 1000000 1000000 1000000 1000000 1000000 1000000
+1000000]; %number of codewords generated for each SNR
+snr_uncoded=linspace(0,max(snr),length(snr)); %range of signal-to-noise ratios for
+BER of uncoded BPSK which we will compare our results with
 Eb_N0=10.^(snr/10); %convert snr in dB to Eb/N0
 ber=zeros(1,length(snr)); %initialise vector of bit-error rates for each snr value
 G=ones(1,N); %Repetition code generator matrix
@@ -24,7 +26,8 @@ x=1-2*codeword; %BPSK signal obtained by mapping a bit 0 to +1 (in-phase
 carrier signal) and a bit 1 to -1 (out-of-phase carrier signal)
 n=sigma*randn(1,length(x)); %generate white Gaussian noise
 y=x+n; %add noise to BPSK signal
-d=(y<0); %BPSK demodulation. If the received signal is negative then the demodulated bit is 1, else the demodulated bit is 0
+d=(y<0); %BPSK demodulation. If the received signal is negative then the
+demodulated bit is 1, else the demodulated bit is 0
 %Majority Decoding
 n1=nnz(d); %count the number of 1s in the received binary word d
 n0=N-n1; %the number of 0s in the recevied binary word d
@@ -33,8 +36,8 @@ decoded_message=1; %decoded message bit is 1
 else
 decoded_message=0; %else the decoded message bit is 0
 end
-if decoded_message~=message %if the decoded message bit is different to the message bit then this is a bit error
-errors=errors+1; %add the bit error to the error counter
+if decoded_message~=message %if the decoded message bit is different to the
+message bit then this is a bit errorerrors=errors+1; %add the bit error to the error counter
 end
 end
 ber(s)=errors/(frames(s)*K); %calculate BER of the repetition code
