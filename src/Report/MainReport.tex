@@ -1,0 +1,656 @@
+\documentclass[a4paper,12pt]{article}
+\input{ReportHeader}
+\graphicspath{{../Images/}}
+
+\begin{document}
+%----------------------------------------------------------------------------------------
+%	TITLE+
+%----------------------------------------------------------------------------------------
+% Title Page
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    \Huge{\textbf{EEE3023 Error Correction Codes}}\\[0.5cm]
+    \Large{\textbf{Semester 1 Report}}\\ 
+    \Large{Sahas Talasila \textit{230057896}}
+    \vfill
+\end{titlepage}
+
+% Table of Contents
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\section{Task 1}
+
+\textbf{Theory and Procedure}
+
+The repetition code is the simplest error-correcting code, where a single message bit is repeated \(N\) times to form the codeword. For the \((3,1,3)\) code, \(K = 1\) message bit, \(N = 3\) codeword bits, and \(D = 3\) is the minimum Hamming distance. The code rate is
+\[
+R_c = \frac{K}{N} = \frac{1}{3}.
+\]
+
+Encoding uses the generator matrix
+\[
+\mathbf{G} = [\,1 \; 1 \; 1\,],
+\]
+producing codewords according to
+\[
+\mathbf{c} = m \cdot \mathbf{G} \pmod{2}.
+\]
+Decoding employs majority voting, where the bit value appearing most frequently is selected.
+
+The noise standard deviation is calculated as
+\[
+\sigma = \sqrt{\frac{1}{2 R_c \cdot 10^{\mathrm{SNR}/10}}}.
+\]
+This accounts for the reduced energy per coded bit due to the code rate penalty.
+
+The code listing for the tasks are provided in the Github Repository LINK HERE:
+
+\textbf{Results and Discussion}
+
+The expected output is a semilogarithmic plot showing the bit error rate (BER) versus \(E_b/N_0\) in dB, with two curves. The first curve corresponds to uncoded BPSK with the theoretical BER given by
+\[
+P_b = \tfrac{1}{2}\,\mathrm{erfc}\!\left(\sqrt{\frac{E_b}{N_0}}\right).
+\]
+The second curve corresponds to the \((3,1,3)\) repetition code obtained from simulation.
+
+Key observations from the plot include a crossover point at approximately \(4\text{--}5\,\mathrm{dB}\). The coded curve lies above the uncoded curve at low SNR (\(0\text{--}4\,\mathrm{dB}\)), while at high SNR (\(>5\,\mathrm{dB}\)) the coded curve lies below the uncoded curve. At high SNR, the coded curve also exhibits a steeper slope.
+
+At low \(E_b/N_0\), the repetition code performs worse than uncoded BPSK. This is because the code rate \(R_c = \tfrac{1}{3}\) imposes an energy penalty of
+\[
+10 \log_{10}(3) \approx 4.77\,\mathrm{dB},
+\]
+meaning that each coded bit carries only one third of the energy of an uncoded bit. The noise standard deviation used in the simulation,
+\[
+\sigma = \sqrt{\frac{1}{2 R_c \left(E_b/N_0\right)}},
+\]
+directly reflects this effect, as a lower code rate increases the noise power relative to the signal.
+
+Beyond the crossover point at approximately \(4\text{--}5\,\mathrm{dB}\), error correction dominates the performance. With minimum distance \(D = 3\), the code can correct
+\[
+t = \left\lfloor \frac{D-1}{2} \right\rfloor = 1
+\]
+error per codeword. The majority decoding operation implements this behaviour, since a decoding error requires at least two of the three bits in a codeword to be received incorrectly, which becomes increasingly unlikely at high SNR. The steeper BER slope at high SNR therefore demonstrates the coding gain achieved through redundancy.
+
+This can be seen from the plots below \textbf{Figure \ref{fig:task1_comp}} which shows the simulated BER curves for both uncoded BPSK and the (3,1,3) repetition code:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task1RepCodeFig.png}
+    \caption{Uncoded BPSK vs (3,1,3) Repetition Code BER Performance}
+    \label{fig:task1_comp}
+\end{figure}
+
+The terminal output \textbf{Figure \ref{fig:task1_term}} also shows that there is no crossover in this range, indicating that the coded BER is always lower than the uncoded BER for the tested SNR values.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.38]{Task1TermOutput.png}
+    \caption{Task 1 terminal outputs}
+    \label{fig:task1_term}
+\end{figure}
+
+For even further verification, comparisons between the theoretical and simulated BER for uncoded BPSK can be made, showing close agreement \textbf{Figure \ref{fig:task1_theo_comp}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task1TheoreticalFig.png}
+    \caption{Task 1, Theoretical Comparison}
+    \label{fig:task1_theo_comp}
+\end{figure}
+
+The theoretical BER is derived from binomial probability, since decoding fails when two or more of the three bits in a codeword are corrupted. The probability of error is:
+\[
+P_{\text{error}} = \binom{3}{2} p^{2}(1-p) + p^{3}.
+\]
+The close agreement between simulation and theory validates the implementation and confirms that the majority decoder operates correctly.
+
+\section{Task 2}
+
+\textbf{Theory and Procedure}
+
+Increasing the codeword length \(N\) in a repetition code introduces a trade-off. The code rate decreases to \(R_c = 1/N\), resulting in an energy penalty of \(10 \log_{10}(N)\,\mathrm{dB}\) per coded bit. At the same time, the minimum Hamming distance increases to \(D = N\), allowing correction of up to
+\[
+t = \left\lfloor \frac{N-1}{2} \right\rfloor
+\]
+errors.
+
+For odd \(N\), majority decoding selects the bit value appearing more than \(N/2\) times. The theoretical bit error rate is
+\[
+P_e = \sum_{i=\lceil N/2 \rceil}^{N} \binom{N}{i} p^i (1-p)^{N-i},
+\]
+where \(p\) is the coded bit error probability. Increasing \(N\) shifts the crossover point to higher SNR but yields a steeper BER slope and greater coding gain beyond that point.
+
+\textbf{Results and Discussion}
+
+After utilising the provided code to simulate repetition codes with \(N = 3, 5, 7, 9\), the resulting BER curves are shown below \textbf{Figure \ref{fig:task2_comb_plots}}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task2CombinedPlots.png}
+    \caption{Combined Plots for Repetition Codes with \(N = 3, 5, 7, 9\)}
+    \label{fig:task2_comb_plots}
+\end{figure}
+
+The combined plot reveals the fundamental trade-off in repetition codes: longer codes achieve better asymptotic performance but require increasingly high SNR to become effective. For bandwidth-limited systems, the (3,1,3) or (5,1,5) codes may be preferable despite lower coding gain, as they operate effectively at practical SNR values.
+
+There is a negative coding gain at low SNR for all repetition codes due to the energy penalty from low code rates. A negative coding gain signifies that the coded system performs worse than the uncoded system at that SNR. This occurs because the redundancy reduces the energy allocated to each coded bit, making the system more susceptible to noise.
+
+In addition, the code gains can be seen below \textbf{Figure \ref{fig:task2_coding_gains}} which shows the coding gains for each repetition code length:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.38]{Task2SNRTerm.png}
+    \caption{Coding Gains for Different Repetition Codes}
+    \label{fig:task2_coding_gains}
+\end{figure}
+
+Below, the terminal output highlights the energy penalty for each code length:
+
+Energy penalty is needed, because it shows the increase in SNR required to reach the crossover point.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.38]{Task2TermSummary.png}
+    \caption{Energy Penalty Output}
+    \label{fig:task2_comb_plots}
+\end{figure}
+
+The crossover point increases with \(N\) because the energy penalty grows as \(10 \log_{10}(N)\). For large \(N\), each coded bit carries only \(1/N\) of the uncoded bit energy, requiring more SNR before error correction compensates for the rate loss.
+
+Beyond the crossover point, longer repetition codes exhibit much steeper BER curves. This is because decoding failure requires more than \(N/2\) bit errors within a codeword, an event with extremely low probability at moderate SNR.
+
+Despite this, the coding gain decreases only marginally (\(\textbf{-1.35 dB} \rightarrow \textbf{-1.62 dB} \rightarrow \textbf{-1.98 dB}\)). This illustrates the fundamental inefficiency of repetition codes: although their theoretical performance decreases, the bandwidth cost of \(1/N\) bits per symbol makes long repetition codes impractical in real systems.
+
+Comparing with the uncoded BPSK curve \textbf{Figure \ref{fig:task2_rep_vs_uncoded}}, it is evident that only the shortest repetition codes provide a meaningful advantage at realistic SNR levels. Longer codes require prohibitively high SNR to outperform uncoded transmission, limiting their utility in practical applications, which has been demonstrated below:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task2RepCodeVUncodedBPSK.png}
+    \caption{Repetition Codes vs Uncoded BPSK}
+    \label{fig:task2_rep_vs_uncoded}
+\end{figure}
+
+\section{Task 3}
+
+\textbf{Theory and Procedure}
+
+The \((7,4,3)\) Hamming code is a linear block code that encodes \(K = 4\) message bits into \(N = 7\) codeword bits by adding three parity bits. Unlike repetition codes, which simply duplicate bits, Hamming codes use carefully designed parity bits to enable both error detection and single-bit error correction.
+
+The key parameters of the code are:
+\[
+N = 7, \quad K = 4, \quad D = 3, \quad R_c = \frac{K}{N} = \frac{4}{7}.
+\]
+With a minimum Hamming distance of \(D = 3\), the code can correct
+\[
+t = \left\lfloor \frac{D-1}{2} \right\rfloor = 1
+\]
+bit error per codeword.
+
+For systematic encoding, the generator matrix has the form \(\mathbf{G} = [\mathbf{I}_4 \mid \mathbf{P}]\), so the message bits appear unchanged in the codeword. One possible generator matrix is
+\[
+\mathbf{G} =
+\begin{bmatrix}
+1 & 0 & 0 & 0 & 1 & 1 & 0 \\
+0 & 1 & 0 & 0 & 0 & 1 & 1 \\
+0 & 0 & 1 & 0 & 1 & 1 & 1 \\
+0 & 0 & 0 & 1 & 1 & 0 & 1
+\end{bmatrix}.
+\]
+Encoding is performed using
+\[
+\mathbf{c} = \mathbf{m} \cdot \mathbf{G} \pmod{2}.
+\]
+
+Decoding is based on the parity-check matrix \(\mathbf{H} = [\mathbf{P}^T \mid \mathbf{I}_3]\), for example
+\[
+\mathbf{H} =
+\begin{bmatrix}
+1 & 0 & 1 & 1 & 1 & 0 & 0 \\
+1 & 1 & 1 & 0 & 0 & 1 & 0 \\
+0 & 1 & 1 & 1 & 0 & 0 & 1
+\end{bmatrix}.
+\]
+The syndrome is computed as
+\[
+\mathbf{s} = \mathbf{H} \cdot \mathbf{r}^T \pmod{2},
+\]
+where \(\mathbf{r}\) is the received word. If \(\mathbf{s} = \mathbf{0}\), no error is detected. Otherwise, the syndrome uniquely identifies the position of the erroneous bit, allowing it to be corrected.
+
+The code rate \(R_c = 4/7\) introduces an energy penalty of
+\[
+10 \log_{10}\!\left(\frac{N}{K}\right) = 10 \log_{10}\!\left(\frac{7}{4}\right) \approx 2.43~\mathrm{dB},
+\]
+which is significantly smaller than the penalty of repetition codes. The noise standard deviation used in simulation is
+\[
+\sigma = \sqrt{\frac{1}{2 R_c \cdot E_b/N_0}} = \sqrt{\frac{N}{2K \cdot E_b/N_0}}.
+\]
+
+For theoretical performance analysis, let \(p\) be the coded bit error probability:
+\[
+p = \tfrac{1}{2}\,\mathrm{erfc}\!\left(\sqrt{R_c \cdot E_b/N_0}\right).
+\]
+A decoding failure occurs when two or more bits in a codeword are corrupted, since only single-bit errors can be corrected:
+\[
+P_{\text{codeword}} = \sum_{i=2}^{7} \binom{7}{i} p^i (1-p)^{7-i}.
+\]
+The resulting bit error rate can be approximated as
+\[
+P_b \approx \frac{1}{7} \sum_{i=2}^{7} i \binom{7}{i} p^i (1-p)^{7-i}.
+\]
+
+\textbf{Results and Discussion}
+
+The bandwidth efficiency analysis compares the number of channel uses required to transmit four information bits using different coding schemes. The \((7,4,3)\) Hamming code requires seven channel uses, corresponding to an efficiency of approximately \(57.1\%\), while the \((3,1,3)\) repetition code requires twelve channel uses, giving an efficiency of approximately \(33.3\%\). This represents a \(71.4\%\) improvement in bandwidth efficiency for the Hamming code, shown in \textbf{Figure \ref{task3_term_out4}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.38]{Task3TermOut4.png}
+    \caption{Bandwidth Analysis}
+    \label{fig:task3_term_out4}
+\end{figure}
+
+The graph below \textbf{Figure \ref{fig:task3_error_break}} shows the error breakdown for the \((7,4,3)\) Hamming code, illustrating the distribution of different error types observed during simulation:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task3ErrorBreakdown.png}
+    \caption{Error Breakdown for (7,4,3) Hamming Code}
+    \label{fig:task3_error_break}
+\end{figure}
+
+In addition, there are several notable observations from the simulation results for the \((7,4,3)\) Hamming code.
+
+The improvements can be seen in the terminal output below \textbf{Figure \ref{fig:task3_term}} which shows the breakdown of syndromes, undetectable errors, and miscorrected errors:
+
+At \( \text{SNR} = 5\,\mathrm{dB} \), the undetectable and miscorrected error analysis shows that two-bit errors dominate the decoding failures, while three-bit or higher-order errors are much less likely. This behaviour is consistent with a code capable of correcting only single-bit errors.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.33]{Task3TermOut3.png}
+    \caption{Terminal output}
+    \label{fig:task3_term}
+\end{figure}
+
+The syndrome distribution at \( \text{SNR} = 0\,\mathrm{dB} \) shows how frequently each possible syndrome occurs during reception. The zero syndrome appears most often, indicating correct reception in a significant fraction of cases. All non-zero syndromes occur with similar probability, confirming that single-bit errors are approximately equally likely across all bit positions and that the parity-check matrix correctly maps each error to a unique syndrome, seen in \textbf{Figure \ref{fig:task3_syndrome_dist}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task3SyndromeDistribution.png}
+    \caption{Syndrome Distribution}
+    \label{fig:task3_syndrome_dist}
+\end{figure}
+
+A comparison between repetition codes and the \((7,4,3)\) Hamming code highlights the trade-off between code rate, crossover SNR, and energy penalty. While repetition codes with lower rates achieve earlier crossover points, they incur significantly larger energy penalties and poor bandwidth efficiency. The Hamming code achieves comparable error correction capability with substantially improved efficiency and a lower energy penalty.
+
+Simulation results show the bit error rate decreasing monotonically as SNR increases. A rapid drop in BER is observed beyond approximately \(6\,\mathrm{dB}\), indicating effective error correction once the signal quality is sufficient \textbf{Figure \ref{fig:task3_sim}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task3HammingCodePlot.png}
+    \caption{Theoretical vs Simulated BER for (7,4,3) Hamming Code}
+    \label{fig:task3_sim}
+\end{figure}
+
+The crossover analysis identifies a crossover SNR of approximately \(5.7\,\mathrm{dB}\), where the coded BER becomes lower than the uncoded BER. Beyond this point, the Hamming code provides a net performance benefit.
+
+The coding gain analysis shows that the Hamming code provides limited coding gain at very low BER levels. Although the gain is modest, it becomes positive at lower BERs, consistent with the minimum distance of the code.
+
+The points mentioned above, can be seen in \textbf{Figure \ref{fig:task3_term_out2}} which shows the crossover and coding gain analysis:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.33]{Task3TermOut2.png}
+    \caption{Crossover and Coding Gain Analysis}
+    \label{fig:task3_term_out2}
+\end{figure}
+
+The \((7,4,3)\) Hamming code parameters confirm correct implementation. The generator and parity-check matrices satisfy the condition \( \mathbf{H}\mathbf{G}^T = 0 \), verifying that the code structure is valid and that syndrome decoding is correctly defined, as seen in the figure below \textbf{Figure \ref{fig:task3_term_out1}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.33]{Task3TermOut1.png}
+    \caption{Hamming Code Parameters and Matrix Verification}
+    \label{fig:task3_term_out1}
+\end{figure}
+
+The \((7,4,3)\) Hamming code exhibits a fundamentally different trade-off compared to repetition codes. Although both schemes can correct exactly one error per codeword (\(t = 1\)), their efficiency differs significantly.
+
+The Hamming code reaches its crossover point at a lower \(E_b/N_0\) because of its higher code rate. With \(R_c = 4/7\), the associated energy penalty is approximately \(2.43\,\mathrm{dB}\), compared to \(4.77\,\mathrm{dB}\) for the \((3,1,3)\) repetition code. As a result, each coded Hamming bit carries more energy, requiring less SNR to offset the coding overhead.
+
+At high SNR, however, the achievable coding gain of the Hamming code is slightly lower. This is due to the structure of the codeword: the Hamming code spreads four information bits across seven coded bits, so a decoding failure involving two or more bit errors can affect multiple message bits. In contrast, a two-bit error in a repetition codeword impacts only a single message bit. In addition, although both codes have minimum distance \(D = 3\), the longer Hamming codeword provides more combinations for multi-bit errors, resulting in a less steep BER slope.
+
+The main advantage of the Hamming code lies in its bandwidth efficiency. To transmit four information bits, the Hamming code requires only seven channel uses, corresponding to an efficiency of \(4/7 \approx 57\%\). Using a \((3,1,3)\) repetition code requires twelve channel uses for the same information, giving an efficiency of \(4/12 \approx 33\%\). This substantial improvement in efficiency makes Hamming codes far more practical for real communication systems.
+
+\section{Task 4}
+
+\textbf{Theory and Procedure}
+
+This task compares the \((7,4,3)\) Hamming code with the repetition codes analysed previously. The comparison is based on the following metrics. The code rate \(R_c\) measures bandwidth efficiency as the ratio of information bits to transmitted bits. The energy penalty, given by \(10 \log_{10}(N/K)\,\mathrm{dB}\), quantifies the reduction in energy per coded bit due to redundancy. The error correction capability is
+\[
+t = \left\lfloor \frac{D-1}{2} \right\rfloor,
+\]
+which gives the maximum number of correctable bit errors per codeword. Performance is further characterised by the crossover SNR, where coded performance surpasses uncoded BPSK, the coding gain at a given BER, and the overall bandwidth efficiency.
+
+Although the \((7,4,3)\) Hamming code and the \((3,1,3)\) repetition code both correct one error per codeword (\(t = 1\)), their efficiencies differ significantly. The ratio of their code rates is
+\[
+\frac{R_{c,\text{Hamming}}}{R_{c,\text{Rep}}} = \frac{4/7}{1/3} = \frac{12}{7} \approx 1.71,
+\]
+showing that the Hamming code is approximately \(71\%\) more bandwidth-efficient while providing the same level of error correction.
+
+Compared with the \((5,1,5)\) repetition code, which corrects two errors per codeword, the Hamming code sacrifices additional error correction for efficiency. The code rate ratio in this case is
+\[
+\frac{4/7}{1/5} = \frac{20}{7} \approx 2.86,
+\]
+meaning the Hamming code is nearly three times more bandwidth-efficient. This highlights the key trade-off between increased error correction capability and the associated bandwidth cost.
+
+At high SNR, long repetition codes exhibit steep BER slopes due to their large minimum distance. However, their extremely low code rates make them unsuitable for bandwidth-limited systems.
+
+To compare how effectively redundancy is used, a normalised coding gain can be defined as
+\[
+G_{\text{norm}} = \frac{G}{(N-K)/K},
+\]
+where \(G\) is the coding gain in decibels. This metric indicates how much performance improvement is achieved per redundant bit and provides a fair basis for comparing different coding schemes.
+
+\textbf{Results and Discussion}
+
+The results show that no single coding scheme is universally optimal; the preferred code depends on the operating SNR and system constraints.
+
+The crossover point analysis demonstrates that the \((7,4,3)\) Hamming code achieves a crossover before all repetition codes. The crossover occurs at approximately \(\textbf{5.5 dB}\), which is lower than that of the \((3,1,3)\) repetition code. This improvement is a direct consequence of the higher code rate \(R_c = 4/7\), which imposes a smaller energy penalty than repetition coding. As a result, the Hamming code becomes effective in low-SNR environments where repetition codes still suffer from excessive redundancy overhead.
+
+This can be seen in the comparison below \textbf{Figure \ref{fig:task4_hamming_v_rep}} which shows the crossover point comparison between Hamming and repetition codes:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task4HammingVRep.png}
+    \caption{Crossover Point Comparison}
+    \label{fig:task4_hamming_v_rep}
+\end{figure}
+
+In contrast, longer repetition codes achieve larger absolute coding gains at high SNR. However, these gains are offset by extremely late crossover points. Very long repetition codes require an SNR of approximately \(\textbf{6.5 dB}\) before any improvement over uncoded transmission is observed. At such high SNR values, uncoded BPSK already operates at very low BER, making the additional redundancy impractical, seen in \textbf{Figure \ref{fig:task4_term_out1}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.32]{Task4TermOut1.png}
+    \caption{Code Parameters, performance metrics for Hamming and repetition codes}
+    \label{fig:task4_term_out1}
+\end{figure}
+
+The normalised coding gain metric highlights the fundamental efficiency advantage of the Hamming code. With a normalised gain of approximately \(\textbf{2.43}\), each redundant bit in the Hamming code contributes significantly more error protection than in repetition codes. This efficiency arises from the algebraic structure of linear block codes, where parity bits jointly protect multiple message bits rather than simply duplicating individual bits.
+
+\section{Task 5}
+
+\textbf{Theory and Procedure}
+
+Convolutional codes differ from block codes such as repetition and Hamming codes in that they encode a continuous stream of input bits rather than fixed-length blocks. The encoder has memory, so each output depends on the current input bit as well as a number of previous input bits.
+
+The \((7,5)_8\) convolutional code is defined by two generator polynomials,
+\[
+g_1 = 7_8 = 111_2, \qquad g_2 = 5_8 = 101_2.
+\]
+The constraint length is \(K = 3\), corresponding to two memory elements (\(m = K-1 = 2\)). The code rate is
+\[
+R_c = \frac{1}{2},
+\]
+since one input bit produces two output bits. The free distance of the code is \(d_{\text{free}} = 5\), which determines its error-correcting capability.
+
+The encoder is implemented using shift registers and XOR gates. For each input bit \(u\), two coded bits are generated according to
+\[
+c_1 = u \oplus u_{-1} \oplus u_{-2} \quad \text{(from } g_1 = 111_2\text{)},
+\]
+\[
+c_2 = u \oplus u_{-2} \quad \text{(from } g_2 = 101_2\text{)},
+\]
+where \(u_{-1}\) and \(u_{-2}\) are the previous input bits stored in the encoder memory.
+
+Decoding is performed using the Viterbi algorithm, which determines the most likely transmitted sequence. This is achieved by constructing a trellis of all possible state transitions, computing cumulative path metrics for each path, retaining the survivor path with the lowest metric at each state, and performing a traceback to recover the decoded bit sequence. Hard-decision decoding is used, meaning the received symbols are first quantised to binary values before metric calculation.
+
+\textbf{Results and Discussion}
+
+The convolutional code significantly outperforms both block codes, despite having a similar code rate to the \((7,4,3)\) Hamming code. This performance advantage arises primarily from its larger free distance and the decoding method used, shown in \textbf{Figure \ref{fig:task5_conv_seven}}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.28]{Task5ConvCodeSevenFive.png}
+    \caption{Convolutional vs Hamming Code Performance Comparison}
+    \label{fig:task5_conv_seven}
+\end{figure}
+
+The free distance of the convolutional code is \(d_{\text{free}} = 5\), compared to a minimum distance of \(D = 3\) for the Hamming code. A larger free distance means that more error patterns can be corrected before decoding fails. In addition, convolutional codes are typically decoded using the Viterbi algorithm, which can exploit soft-decision information from the channel. Although hard-decision decoding is used here, soft-decision decoding can provide an additional performance improvement. The trellis diagram can be seen in \textbf{Figure \ref{task5_trellis}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.18]{Task5Trellis.png}
+    \caption{Trellis Diagram for Viterbi Decoding}
+    \label{fig:task5_trellis}
+\end{figure}
+
+Free distance calculation \\
+Explains why convolutional codes outperform block codes with similar code rates by quantifying their stronger error protection. 
+
+Theoretical union bound\\
+Provides an analytical approximation that validates the simulation results and confirms correct decoder behaviour. 
+
+Block code comparison plot\\ 
+Enables a direct performance comparison between repetition codes, Hamming codes, and convolutional codes within a single framework. 
+
+As seen in \textbf{Figure \ref{fig:task5_conv_compare}}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.28]{Task5ConvCodeCompare.png}
+    \caption{Convolutional Code vs Block Code Performance Comparison}
+    \label{fig:task5_conv_compare}
+\end{figure}
+
+\section{Task 6}
+
+\textbf{Theory and Procedure}
+
+The octal generators define which bits in the shift register are XORed to produce each output:
+
+\textbf{(17,15)$_8$ Code (K=4):}
+\[
+\begin{aligned}
+g_1 &= 17_8 = 001111_2 = 1 + D + D^2 + D^3, \\
+g_2 &= 15_8 = 001101_2 = 1 + D^2 + D^3.
+\end{aligned}
+\]
+Memory elements: $m = 3$  
+Free distance: $d_\text{free} = 6$  
+
+\textbf{(133,171)$_8$ Code (K=7):}
+\[
+\begin{aligned}
+g_1 &= 133_8 = 001011011_2 = 1 + D + D^2 + D^3 + D^6, \\
+g_2 &= 171_8 = 001111001_2 = 1 + D^2 + D^3 + D^5 + D^6.
+\end{aligned}
+\]
+Memory elements: $m = 6$  
+
+Free distance: $d_\text{free} = 10$  
+
+The free distance determines the asymptotic coding gain:
+\[
+G_\text{asymp} \approx 10 \cdot \log_{10} \left( \frac{d_\text{free} \cdot R_c}{2} \right) \text{ dB}
+\]
+
+\textbf{Results and Discussion}
+
+Viterbi decoder complexity scales as $O(2^{K-1})$ states:
+
+\[
+\begin{aligned}
+K=3 &: 4 \text{ states}, \\
+K=4 &: 8 \text{ states}, \\
+K=7 &: 64 \text{ states}.
+\end{aligned}
+\]
+
+Longer constraint length provides better performance but requires exponentially more computation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.33]{Task6ConstraintCompare.png}
+    \caption{Metric comparisons}
+    \label{fig:task6_constraint}
+\end{figure}
+
+The results demonstrate the fundamental trade-off in convolutional code design: constraint length vs complexity. There is a clear, exponential trend as constraint length increases, with increasing complexity, but this is backed by an increase in the gain as well.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.33]{Task6ConvCodeCompare.png}
+    \caption{Convolutional Code Comparison}
+    \label{fig:task6_conv}
+\end{figure}
+
+The (133,171)$_8$ code achieves approximately 1.7 dB better coding gain than (7,5)$_8$ at BER = $10^{-4}$, but requires 16$\times$ more decoder states (64 vs 4).  
+
+The BER curves show increasingly steep slopes with higher constraint length, reflecting the higher free distance. At high SNR, the (133,171)$_8$ code's BER drops dramatically faster than the simpler codes.
+
+Binary generator display has been added, to show exactly which taps are used. Complexity analysis is used to quantify $16x$ cost of $K=7$ vs $K=3$.
+Asymptotic gain formula has also been used to link $d_free$ to theoretical performance. This can be seen below, with the following terminal output \textbf{Figure \ref{fig:task6_comp}}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.28]{Task6PerfCompare.png}
+    \caption{Performance, Asymptotic Coding Gain and BER}
+    \label{fig:task6_comp}
+\end{figure}
+
+\section{Task 7}
+
+\textbf{Theory and Procedure}
+
+Task 7 synthesises findings from Tasks 1\-6 by comparing three fundamental error\-correcting code families: repetition codes, Hamming codes, and convolutional codes. The goal is to determine which codes perform best under different constraints and operating conditions.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Code} & \textbf{Family} & \textbf{Rate ($R_c$)} & \textbf{Distance} & \textbf{Errors Corrected ($t$)} \\
+\hline
+(3,1,3) & Repetition & 1/3 & 3 & 1 \\
+(5,1,5) & Repetition & 1/5 & 5 & 2 \\
+(7,4,3) & Block (Hamming) & 4/7 & 3 & 1 \\
+(7,5)$_8$ & Convolutional & 1/2 & 5 & 2 \\
+(17,15)$_8$ & Convolutional & 1/2 & 6 & 2 \\
+(133,171)$_8$ & Convolutional & 1/2 & 10 & 4 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+    \item \textbf{Code Rate ($R_c = K/N$):}  
+    The proportion of transmitted bits that carry information. Higher rates indicate better bandwidth efficiency. The energy penalty for coding is:
+    \[
+    10 \cdot \log_{10}\left(\frac{1}{R_c}\right) \text{ dB}
+    \]
+    
+    \item \textbf{Minimum / Free Distance ($D$ or $d_\text{free}$):}  
+    Determines error correction capability via
+    \[
+    t = \left\lfloor \frac{D-1}{2} \right\rfloor.
+    \]  
+    Higher distance enables correction of more errors and produces steeper BER slopes at high SNR.
+    
+    \item \textbf{Crossover Point:}  
+    The SNR at which coded BER drops below uncoded BER. Lower crossover means the code becomes beneficial at lower SNR.
+    
+    \item \textbf{Coding Gain:}  
+    The SNR reduction achieved at a target BER compared to uncoded transmission, measured in dB.
+    
+    \item \textbf{Normalised Gain:}  
+    Coding gain divided by the redundancy ratio $((1-R_c)/R_c)$. This metric indicates how efficiently each redundant bit contributes to error correction—higher values mean better utilisation of redundancy.
+\end{enumerate}
+
+Claude Shannon's 1948 theorem establishes the theoretical limit for reliable communication. For code rate $R_c$ over an AWGN channel:
+\[
+\left( \frac{E_b}{N_0} \right)_\text{min} = \frac{2^{R_c} - 1}{R_c}
+\]
+
+This is the minimum SNR required for error-free communication at rate $R_c$. The gap between a practical code's required SNR and this limit measures how close the code approaches theoretical capacity.
+
+\textbf{Results and Discussion}
+
+The (3,1,3) and (5,1,5) repetition codes achieve error correction through simple bit duplication and majority voting. Their primary advantage is implementation simplicity—no matrix operations or trellis decoding required. However, their bandwidth efficiency is poor: the (5,1,5) code uses 5 channel symbols to transmit 1 information bit.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.32]{Task7BERCompAllCodes.png}
+    \caption{BER comparison }
+    \label{fig:allBERcomp}
+\end{figure}
+
+The results show diminishing returns with increased length: doubling redundancy from $N=3$ to $N=5$ adds only $\sim 0.8$ dB coding gain while reducing bandwidth efficiency from 33\% to 20\%. The normalised gain drops from 1.08 to 0.74, indicating increasingly inefficient use of redundancy.
+
+Repetition codes are suitable only for extremely simple systems or channels so noisy that sophisticated decoding would fail regardless.
+
+\textbf{Hamming Code}  
+
+The (7,4,3) Hamming code offers the highest bandwidth efficiency (57\%) among all codes tested with error correction capability. Its normalised gain of $\sim 2.37$ is second only to the best convolutional code, demonstrating efficient utilisation of redundancy through algebraic structure.
+
+However, absolute coding gain is modest ($\sim 1.8$ dB at BER = $10^{-4}$) because the minimum distance $D=3$ limits correction to single-bit errors. The BER curve slope at high SNR is less steep than convolutional codes, meaning performance improvement slows as SNR increases.
+
+The Hamming code's strength lies in applications where bandwidth is severely constrained but only moderate error correction is needed, such as computer memory (ECC RAM).
+
+\textbf{Convolutional Codes}  
+
+The three convolutional codes demonstrate progressively improving performance with increasing constraint length. The (133,171)$_8$ code with $K=7$ achieves approximately 5.1 dB coding gain—nearly 3$\times$ better than the Hamming code despite similar bandwidth efficiency.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.32]{Task7BERFamComp.png}
+    \caption{BER Comparison by correction types}
+    \label{fig:BERcorrectionFam}
+\end{figure}
+
+This superiority stems from two factors. First, the free distance ($d_\text{free} = 10$) is much higher than any block code of comparable rate, enabling correction of more error patterns. Second, Viterbi decoding optimally exploits the trellis structure to find the most likely transmitted sequence.
+
+The trade-off is decoder complexity: the (133,171) code requires 64 trellis states compared to 4 for (7,5), representing 16$\times$ computational cost. This explains why simpler codes remain relevant for power-constrained devices.
+
+\textbf{Shannon Limit Context}  
+
+All codes operate 5\-10 dB from Shannon's theoretical limit. The (133,171) convolutional code comes closest at $\sim 5.7$ dB gap, while the Hamming code is furthest at $\sim 9.8$ dB.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.33]{Task7ShannonLimCompTerm.png}
+    \caption{Shannon Limit Comparison}
+    \label{fig:Shannon}
+\end{figure}
+
+These gaps arise from several factors: hard-decision decoding discards soft reliability information ($\sim 2$ dB penalty), finite block/constraint lengths prevent optimal performance, and the code structures were not designed to approach capacity.
+
+Shannon's 1948 theorem [1] proved that capacity-approaching codes exist but did not specify how to construct them. The 45-year gap between Shannon's proof and turbo codes (1993) illustrates the difficulty of this problem. The codes in this lab represent foundational techniques that enabled practical digital communication while researchers pursued Shannon's ultimate promise.
+
+\textbf{Key Conclusions}
+
+\begin{enumerate}
+    \item \textbf{Convolutional codes provide the best absolute performance.}  
+    The (133,171) code achieves $\sim 5.1$ dB gain, outperforming all other codes by at least 1.1 dB. Even the simple (7,5) code surpasses all block and repetition codes.
+    
+    \item \textbf{Hamming code offers the best bandwidth efficiency.}  
+    With $R_c = 0.571$ and normalised gain of 2.37, the Hamming code extracts maximum benefit per redundant bit. Ideal for bandwidth-limited applications.
+    
+    \item \textbf{Repetition codes serve only niche applications.}  
+    Their simplicity comes at severe bandwidth cost. The (5,1,5) code uses 5$\times$ bandwidth to achieve only 1.2 dB more gain than Hamming.
+    
+    \item \textbf{Higher distance produces steeper BER slopes.}  
+    At high SNR, the (133,171) code's BER drops fastest due to $d_\text{free} = 10$. This is critical for achieving very low BER targets.
+    
+    \item \textbf{Performance vs. complexity is a fundamental trade-off.}  
+    The (133,171) code requires 16$\times$ the decoder states of (7,5) for $\sim 1.7$ dB additional gain. System designers must balance these factors based on application requirements.
+    
+    \item \textbf{All codes operate far from Shannon limit.}  
+    Modern turbo and LDPC codes achieve within 0.5 dB of capacity. The codes in this lab, developed in the 1950s--1970s, represent foundational techniques that paved the way for today's near-capacity systems. Shannon's theorem guaranteed such codes exist; it took 45 years to find practical constructions.
+\end{enumerate}
+
+\section{References}
+
+[1] C. E. Shannon, ``A Mathematical theory of communication,'' Bell System Technical Journal, vol. 27, no. 3, pp. 379--423, 1948, doi: \href{https://doi.org/10.1002/j.1538-7305.1948.tb01338.x.}{Information Theory}
+
+\end{document}
